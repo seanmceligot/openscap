@@ -1,0 +1,25 @@
+FROM fedora:31
+
+ENV BUILD_JOBS 4
+
+RUN true \
+        && dnf -y upgrade --refresh \
+        && dnf -y install --nodocs \
+          make cmake openssh-clients \
+          dbus-devel GConf2-devel libacl-devel libblkid-devel libcap-devel libcurl-devel \
+          libgcrypt-devel libselinux-devel libxml2-devel libxslt-devel libattr-devel \
+          openldap-devel pcre-devel perl-XML-Parser perl-XML-XPath perl-devel \
+          python3-devel  python3-docker rpm-devel swig bzip2-devel \
+          gcc gcc-c++ which \
+          xmlsec1-devel xmlsec1-openssl-devel \
+        && dnf -y reinstall grep \
+        && true
+
+COPY . /src
+RUN mkdir /src/build
+WORKDIR /src/build
+
+RUN cmake -D CMAKE_INSTALL_PREFIX=/usr ../ && make -j $BUILD_JOBS install
+
+RUN ls /src/build /usr/bin/o* /usr/local/bin/
+RUN oscap-docker --help && oscap-ssh --help && oscap-podman --help
